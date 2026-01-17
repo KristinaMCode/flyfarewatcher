@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: flyfarewatcher
+    host: smtp.gmail.com
+    port: 587
+    username: muzic.kristina@gmail.com
+    password: sidw jaml vlet tcss
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
