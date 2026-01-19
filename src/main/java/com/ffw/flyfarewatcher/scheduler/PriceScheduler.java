@@ -32,7 +32,7 @@ public class PriceScheduler {
 
     //runs every 12h
     //@Scheduled(fixedRate = 12*60*60*1000) // 12h * 60 min * 60s*1000 mili s ker java time = milisekunde in 1s = 1000milisekund
-    @Scheduled(fixedRate = 30000)
+  //  @Scheduled(fixedRate = 30000)
     public  void checkPrice() throws Exception {
 
         for (Flight f : FlightConfig.flights) {

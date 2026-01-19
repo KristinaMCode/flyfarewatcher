@@ -34,35 +34,38 @@ public class RyanairApiService {
        // System.out.println("THIS IS WHERE I CALL /ryanair!");
 
         String response = restTemplate.getForObject(url,String.class);
+        return parsePrice(response);
+    }
 
+    public double parsePrice(String json) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(response);
-        // navigate JSON
+        JsonNode root = mapper.readTree(json);
 
         JsonNode trips = root.path("trips");
         if(trips.isEmpty()){
-            return  null;
+            return 0;
         }
 
         JsonNode dates = trips.get(0).path("dates");
         if(dates.isEmpty()){
-            return  null;
+            return 0;
         }
 
         JsonNode flights = dates.get(0).path("flights");
-       if(flights.isEmpty()){
-           return  null;
-       }
+        if(flights.isEmpty()){
+            return  0;
+        }
 
-        JsonNode priceNode = flights.get(0)
+        JsonNode fares =
+                flights.get(0)
                         .path("regularFare")
-                        .path("fares")
-                        .get(0)
-                        .path("amount");
+                        .path("fares");
+        //  return priceNode.asDouble();
+        if (!fares.isArray() || fares.isEmpty()) {
+            return 0;
+        }
 
-        return priceNode.asDouble();
-
-        // return restTemplate.getForObject(url,String.class);
+        return fares.get(0).path("amount").asDouble();
     }
 
     private static final String FILE = "price.txt";
@@ -97,5 +100,4 @@ public class RyanairApiService {
                 f.getDate()
         );
     }
-
 }
