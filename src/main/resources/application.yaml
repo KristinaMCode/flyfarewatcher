@@ -3,13 +3,36 @@ spring:
     name: flyfarewatcher
     host: smtp.gmail.com
     port: 587
-    username: muzic.kristina@gmail.com
-    password: sidw jaml vlet tcss
+    username: MAIL_USERNAME
+    password: MAIL_PASSWORD
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+
+flights:
+  list:
+    - from: ZAG
+      to: STN
+      date: 2026-02-06
+
+    - from: ZAG
+      to: STN
+      date: 2026-01-19
+
+    - from: ZAG
+      to: MAD
+      date: 2026-02-01
+
+    - from: BER
+      to: TRS
+      date: 2026-03-26
+
+    - from: BER
+      to: TRS
+      date: 2026-03-30
+
 
 

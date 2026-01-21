@@ -66,7 +66,7 @@ public class FlightController {
 
         Flight f = new Flight(from, to, date);
         Double price =ryanairApiService.getPrice(f);
-        if(price == null){
+        if(price == null || price == 0){
             return "No direct flights for this rout/dates!";
         }
         return "Price: " + price + " €";

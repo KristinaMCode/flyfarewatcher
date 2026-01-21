@@ -11,11 +11,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Random;
 
 
-
-@Component //@Component = "Spring, use this class" Without @Component: Spring would IGNORE this class, Scheduler would NOT run
+@Component
+//@Component = "Spring, use this class" Without @Component: Spring would IGNORE this class, Scheduler would NOT run
 //@Component ="Put this class into Spring's brain"
 //Spring brain = list of all important classes
 //more classes can have this r+tag that Spring will create object for each clas, keep them i nmemory, manage their lyfcycle , allow them to talk to each other
@@ -27,37 +28,70 @@ public class PriceScheduler {
     private HistoryService historyService;
 
     @Autowired
+    private FlightConfig flightConfig;
+
+    @Autowired
     private RyanairApiService ryanairApiService;
     private Integer lastPrice = null;
 
-    //runs every 12h
-    //@Scheduled(fixedRate = 12*60*60*1000) // 12h * 60 min * 60s*1000 mili s ker java time = milisekunde in 1s = 1000milisekund
-  //  @Scheduled(fixedRate = 30000)
-    public  void checkPrice() throws Exception {
+    @Scheduled(fixedRate = 30000)
+    public void checkPrice() throws Exception {
 
-        for (Flight f : FlightConfig.flights) {
-            try{
+        for (Flight f : flightConfig.getList()) {
+            try {
                 Double current = ryanairApiService.getPrice(
                         f.getFrom(),
                         f.getTo(),
                         f.getDate()
                 );
+
+                List<Flight> flights = flightConfig.getList();
+               LocalDate dateOfFly = LocalDate.parse(f.getDate());
+                LocalDate today = LocalDate.now();
+                if(dateOfFly.isBefore(today)){
+                    System.out.println("Flight " + f.getFrom() + " -> " + f.getTo() +
+                            " on " + f.getDate() + " IS OUT OF DATE!"
+                    );
+                    continue;
+                }
+                if (flights == null || flights.isEmpty()) {
+                    System.out.println("No flights configured!");
+                    return;
+                }
+                if (current == null) {
+                    System.out.println("Flight " + f.getFrom() + " -> " + f.getTo() +
+                            " on " + f.getDate() + " NOT FOUND"
+                    );
+                    continue;
+                }
+                if (current == 0) {
+                    System.out.println("Price is zero – probably invalid flight");
+                    continue;
+                }
+
                 Double old = ryanairApiService.readLastPrice(f);
                 System.out.println("Checking " + f +
                         " | Old=" + old + " New=" + current);
-                if(old == null|| current <old){
-                    emailService.sendMail(
+                String html =
+                        "<h2>✈️ PRICE DROP!</h2>" +
+                                "<p><b>Flight:</b>" + f.getFrom() + " -> " + f.getTo() + "</p>" +
+                                "<p><b>Old price:</b>" + old + "</p>" +
+                                "<p><b>New price:</b>" + current + "</p>" +
+                                "<p><b>\uD83D\uDD25 Book now!</b></p>";
+
+               if (old == null || current < old) {
+                //if ( current <= old) {
+                    emailService.sendHtmlMail(
                             "muzic.kristina@gmail.com",
                             "PRICE DROP!",
-                            "For flight from "+f.getFrom() +" to "+f.getTo()+ " "+"Old: " + old + " €\nNew: " + current + " €"
+                            html
                     );
                 }
-                ryanairApiService.savePrice(f,current);
-            } catch (Exception e){
-                System.out.println("ERROR for: " +f);
+                ryanairApiService.savePrice(f, current);
+            } catch (Exception e) {
+                System.out.println("ERROR for: " + f);
             }
         }
-
 
 
 //        String from = "LJU";
